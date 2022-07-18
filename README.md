@@ -16,10 +16,12 @@ Usage:
 `var adsWrapper:AdvertsWrapper = new AdvertsWrapper()`
 You can do this after you init Core and (on iOS) request IDFA authorisation
 3. There are 2 ways to intialize:
+
 **3a.** If you have a custom made GDPR gate in your game, call
 `AdvertsWrapper.self.initializeAfterOwnPrivacyGate(mayShowPersonalizedAds:Boolean)`
 after the player has agreed to your terms of service and selected the type of ads served in the game.
 More discussion on the custom GDPR gate creation is here: https://github.com/distriqt/ANE-Adverts/discussions/397
+
 **3b.** You can use Google's UMP solution to gather player's consent by calling 
 `AdvertsWrapper.self.initializeAfterGooglesUMPForm()`
 Warning: the current version of Google's UMP might prevent ads from loading at all (both personalized and non-personalized) after certain player's selections in the form. This is entirely Google's problem discussed here: https://github.com/distriqt/ANE-Adverts/discussions/401. Further on we explain a workaround how to make the player change a decision like that.
@@ -37,9 +39,13 @@ AdvertsWrapper.self.showRewardedAd(onGranted:Function)
 ```
 `onGranted` is a function `(String, int)` which defines what will happen if the user completes watching a rewarded video ad
 
+Contributions are welcome if you'd like to add a likewise convenience support for the other ad types.
+
 6. Modifications inside AdvertsWrapper
-Logging. There is a private function log() in AdvertsWrapper.as which you can use to log its behavior. From own experience I recommend to call jukbyte console's Cc.log function from it. More on this useful tool: https://www.reddit.com/r/as3/comments/lyg16d/junkbyte_console_very_useful_tool_for_tracking/
-Real ad units. When you finished testing and ready to integrate real ads replace the values of private variables `adIdInterstitial` and `adIdRewardedVideo` with your actual ad units codes.
+
+**Logging**. There is a private function log() in AdvertsWrapper.as which you can use to log its behavior. From own experience I recommend to call jukbyte console's Cc.log function from it. More on this useful tool: https://www.reddit.com/r/as3/comments/lyg16d/junkbyte_console_very_useful_tool_for_tracking/
+
+**Real ad units**. When you finished testing and ready to integrate real ads replace the values of private variables `adIdInterstitial` and `adIdRewardedVideo` with your actual ad units codes.
 
 7. Informing the player about the absence of ads and the actions needed.
 As noted above, some of player's selection in Google's UMP form can lead to absolute absence of ads. You can reset the player's selection and ask to complete the form again by calling
@@ -62,6 +68,7 @@ if (AdvertsWrapper.self.isRewardedVideoReady()){
 ```
 The button which provides a reward for watching an ad should be visible if the following condition is true:
 `AdvertsWrapper.self.isRewardedVideoReady() || AdvertsWrapper.self.isRewardedAdsUnavailableBecauseOfNetwork() || AdvertsWrapper.self.isRewardedAdsUnavailableBecauseOfGoogleUMP();`
-More on this in these Youtube videos I made:
-https://youtu.be/z70s9Us51H8
-https://youtu.be/9EN4S-nyy4s
+
+More on this in these Youtube videos explaining the work of AdvertsWrapper:
+- https://youtu.be/z70s9Us51H8
+- https://youtu.be/9EN4S-nyy4s
