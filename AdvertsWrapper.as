@@ -17,7 +17,7 @@ package
 	import com.distriqt.extension.adverts.ump.events.UserMessagingPlatformEvent;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
-	//import com.junkbyte.console.Cc;// we recommend to use add junkbyte console for logging	
+	import com.junkbyte.console.Cc;// we recommend to use add junkbyte console for logging	
 	
 	/**
 	 * This is a wrapper for the basic functions of distiqt's Adverts
@@ -36,9 +36,9 @@ package
 		
 		//These are the codes of Admob test ads. Don't forget to change the ones you're using to the real ad codes from your account when you finish testing
 		private var adIdBanner:String =					"ca-app-pub-3940256099942544/2934735716";
-		private var adIdInterstitial:String =			"ca-app-pub-3940256099942544/4411468910";//Interstitial
+		private var adIdInterstitial:String =			"ca-app-pub-7541048939453624/7379575655";//Interstitial
 		private var adIdInterstitialVideo:String =		"ca-app-pub-3940256099942544/5135589807";
-		private var adIdRewardedVideo:String =			"ca-app-pub-3940256099942544/1712485313";//Rewarded video
+		private var adIdRewardedVideo:String =			"ca-app-pub-7541048939453624/2686610038";//Rewarded video
 		private var adIdNativeAdvanced:String =			"ca-app-pub-3940256099942544/3986624511";
 		private var adIdNativeAdvancedVideo:String =	"ca-app-pub-3940256099942544/2521693316";
 		private var adIdAppOpenAd:String =				"ca-app-pub-3940256099942544/5662855259";		
@@ -59,10 +59,12 @@ package
 		private var arePersonalizedAdsAllowed:Boolean = true;
 		
 		private var wasUMPCalled:Boolean = false;//did you call Google's UMP consent form
-		private var hasNotAvailableAdsError:Boolean = false;//did you receive "no ads to show" error. 
+		
+		private var lastErrorCode:int =-1;//this is needed to detect the reasons why are the ads not available.
+		//There are 2 reasons: network connection
+		//or Google's UMP setting.
 		//According to developers, Google's UMP solution might prevent serving ads to players at all
 		//so in combination with wasUMPCalled the wrapper might give you information if UMP could be a reason
-		private var hasNetworkAdsError:Boolean = false;//did you receive ads load error due to network not available
 
 		//Creation of a wrapper
 		public function AdvertsWrapper() 
@@ -132,6 +134,7 @@ package
 		//If you have initialized Adverts from Google UMP Form and the ads are not shown because of the player's selection
 		//Then you can ask the player to reinitialize and select different option in the form
 		public function reInitGoogleUMPForm():void{
+			lastErrorCode =-1;
 			log("\nCALLING reInitGoogleUMPForm")
 			if (Adverts.service.ump.isSupported){
 				var consentInformation:ConsentInformation = Adverts.service.ump.getConsentInformation();
@@ -321,20 +324,15 @@ package
 		private function loadedRVHandler(e:RewardedVideoAdEvent):void 
 		{
 			log("- loadedRVHandler rewarded video ad loaded and ready to be displayed")
-				
-			hasNotAvailableAdsError = false;
-			hasNetworkAdsError = false;			
+			lastErrorCode =-1;		
 		}
 		
 		private function errorLoadRVHandler(e:RewardedVideoAdEvent):void 
-		{
+		{	
 			log("- errorLoadRVHandler Load error occurred. The errorCode will contain more information", "Error", e.errorCode, e.errorMessage )
-			if (e.errorCode==1){
-				hasNotAvailableAdsError = true;
-			}
-			if (e.errorCode==2){
-				hasNetworkAdsError = true;
-			}
+			lastErrorCode = e.errorCode;
+			// (e.errorCode==1) means "ads not available" (possibly due to Google UMP setting)
+			// (e.errorCode==2) means "network conection error"
 			mustLoadRewardedVideoFromTimer = true;
 		}
 		
@@ -397,11 +395,11 @@ package
 		}
 		
 		public function isRewardedAdsUnavailableBecauseOfNetwork():Boolean{
-			return hasNetworkAdsError
+			return (lastErrorCode==2)
 		}
 		
 		public function isRewardedAdsUnavailableBecauseOfGoogleUMP():Boolean{
-			return hasNotAvailableAdsError && wasUMPCalled;
+			return (lastErrorCode==1) && wasUMPCalled;
 		}
 		
 		//============================SHOWING AD UNITS===================================================
@@ -426,7 +424,7 @@ package
 		//https://www.reddit.com/r/as3/comments/lyg16d/junkbyte_console_very_useful_tool_for_tracking/
 		private function log(...strings):void 
 		{
-			//Cc.log(strings);
+			Cc.log(strings);
 			//trace(strings)
 		}		
 	}
